@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_report"
+        android:title="@string/nav_report"
+        android:icon="@android:drawable/ic_menu_camera" />
+    <item
+        android:id="@+id/nav_my_cases"
+        android:title="@string/nav_my_cases"
+        android:icon="@android:drawable/ic_menu_agenda" />
+    <item
+        android:id="@+id/nav_rss"
+        android:title="@string/nav_rss"
+        android:icon="@android:drawable/ic_menu_recent_history" />
+</menu>

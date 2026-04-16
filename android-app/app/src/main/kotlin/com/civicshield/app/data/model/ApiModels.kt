@@ -1,0 +1,23 @@
+package com.civicshield.app.data.model
+
+import com.google.gson.annotations.SerializedName
+
+data class LoginRequest(
+    val username: String,
+    val password: String,
+)
+
+data class LoginResponse(
+    @SerializedName("access_token") val accessToken: String,
+    @SerializedName("token_type") val tokenType: String,
+    @SerializedName("user_id") val userId: Long,
+    val role: String,
+)
+
+data class FcmTokenRequest(
+    @SerializedName("fcm_token") val fcmToken: String,
+)
+
+data class OkResponse(
+    val ok: Boolean,
+)

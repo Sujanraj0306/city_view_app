@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">CivicShield</string>
+
+    <string name="login_title">CivicShield</string>
+    <string name="login_subtitle">Sign in to report civic violations</string>
+    <string name="username_hint">Username</string>
+    <string name="password_hint">Password</string>
+    <string name="login_button">Sign in</string>
+
+    <!-- User bottom nav -->
+    <string name="nav_report">Report</string>
+    <string name="nav_my_cases">My Cases</string>
+
+    <!-- Admin bottom nav -->
+    <string name="nav_all_cases">All Cases</string>
+    <string name="nav_map">Map</string>
+    <string name="nav_analytics">Analytics</string>
+
+    <!-- Shared -->
+    <string name="nav_rss">RSS Feed</string>
+</resources>

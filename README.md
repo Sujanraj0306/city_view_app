@@ -82,10 +82,12 @@ A monorepo for the CivicShield platform: an Android client, a backend API, and a
 7. **Build and run the Android app** (separate from Compose):
    ```bash
    cd android-app
-   # open in Android Studio, or:
+   # open in Android Studio (recommended), or from CLI:
    ./gradlew installDebug
    ```
-   Point the app's API base URL at `http://10.0.2.2:8000` for the emulator, or your host's LAN IP for a physical device.
+   - Requires Android Studio Hedgehog+ and JDK 17.
+   - Emulator default: `http://10.0.2.2:8000` is the host's `localhost`. For a physical device, override via `./gradlew installDebug -PCIVIC_BASE_URL=http://<your-lan-ip>:8000` or edit `android-app/gradle.properties`.
+   - Login with the seeded test users: `user1 / pass123`, `user2 / pass123`, `admin / admin123`.
 
 8. **Stop the stack** when you're done:
    ```bash

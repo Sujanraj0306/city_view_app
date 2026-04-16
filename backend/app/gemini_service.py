@@ -38,6 +38,19 @@ _SYSTEM_PROMPT = (
 )
 
 
+_DETAIL_SYSTEM_PROMPT = (
+    "You are a civic violation analyst producing detailed case analysis. "
+    "Given an image, return a JSON object with fields: "
+    "scene_description (what is happening in plain English, 2-3 sentences), "
+    "violation_confirmed (bool), "
+    "vehicle_number (string or null — read any visible number plate, exact characters as shown), "
+    "violation_zone (describe the exact spot visible — road name, landmark, any text in the background, even if only partially visible), "
+    "severity ('low', 'medium', or 'high'), "
+    "bounding_box (object with x, y, width, height in 0-1 normalized image coordinates, or null if the violation is not a discrete object). "
+    "Respond with JSON only, no prose."
+)
+
+
 class GeminiUnavailable(Exception):
     """Raised when the Gemini API is unreachable, misconfigured, or returns garbage."""
 
@@ -116,4 +129,85 @@ async def analyze_report_image(
         "confidence_score": confidence,
         "description": description,
         "rejection_reason": rejection_reason,
+    }
+
+
+async def analyze_case_detail(image_base64: str) -> dict:
+    """Detailed analysis used by the admin case-detail screen.
+
+    Returned keys (all always present, missing fields coerced to sensible defaults):
+      - scene_description (str)
+      - violation_confirmed (bool)
+      - vehicle_number (str | None) — visible number-plate text, exact characters
+      - violation_zone (str) — road/landmark/visible text description
+      - severity (str) — "low" | "medium" | "high"
+      - bounding_box (dict | None) — {x, y, width, height} in 0..1 normalized coords
+
+    Raises GeminiUnavailable on transport / parse / config failure.
+    """
+    if not _configured:
+        raise GeminiUnavailable("GEMINI_API_KEY not configured")
+
+    try:
+        image_bytes = base64.b64decode(image_base64)
+    except Exception as e:
+        raise GeminiUnavailable(f"invalid base64 image: {e}")
+
+    model = genai.GenerativeModel(
+        model_name=_MODEL_NAME,
+        system_instruction=_DETAIL_SYSTEM_PROMPT,
+        generation_config={"response_mime_type": "application/json"},
+    )
+    parts = [
+        {"mime_type": "image/jpeg", "data": image_bytes},
+        "Produce the detailed analysis JSON now.",
+    ]
+
+    try:
+        resp = await model.generate_content_async(parts)
+    except Exception as e:
+        log.warning("Gemini detail call failed: %s", e)
+        raise GeminiUnavailable(str(e))
+
+    text = (getattr(resp, "text", "") or "").strip()
+    if not text:
+        raise GeminiUnavailable("empty response from Gemini")
+
+    try:
+        data = json.loads(_strip_code_fences(text))
+    except json.JSONDecodeError as e:
+        log.warning("Gemini detail returned non-JSON: %r", text[:200])
+        raise GeminiUnavailable(f"non-JSON response: {e}")
+
+    severity = str(data.get("severity") or "").lower()
+    if severity not in ("low", "medium", "high"):
+        severity = "medium"
+
+    vehicle_number = data.get("vehicle_number")
+    if vehicle_number is not None:
+        vehicle_number = str(vehicle_number).strip() or None
+
+    bbox_raw = data.get("bounding_box")
+    bounding_box = None
+    if isinstance(bbox_raw, dict):
+        try:
+            bounding_box = {
+                "x": max(0.0, min(1.0, float(bbox_raw.get("x", 0.0)))),
+                "y": max(0.0, min(1.0, float(bbox_raw.get("y", 0.0)))),
+                "width": max(0.0, min(1.0, float(bbox_raw.get("width", 0.0)))),
+                "height": max(0.0, min(1.0, float(bbox_raw.get("height", 0.0)))),
+            }
+            # Sanity: drop degenerate bboxes
+            if bounding_box["width"] <= 0.0 or bounding_box["height"] <= 0.0:
+                bounding_box = None
+        except (TypeError, ValueError):
+            bounding_box = None
+
+    return {
+        "scene_description": str(data.get("scene_description") or "").strip(),
+        "violation_confirmed": bool(data.get("violation_confirmed", False)),
+        "vehicle_number": vehicle_number,
+        "violation_zone": str(data.get("violation_zone") or "").strip(),
+        "severity": severity,
+        "bounding_box": bounding_box,
     }

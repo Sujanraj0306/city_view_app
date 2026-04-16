@@ -42,7 +42,24 @@ class AllCasesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = CaseAdapter(onStatusChanged = ::changeStatus)
+        adapter = CaseAdapter(
+            onStatusChanged = ::changeStatus,
+            onRowClick = { item ->
+                startActivity(
+                    AdminCaseDetailActivity.newIntent(
+                        context = requireContext(),
+                        caseId = item.id,
+                        caseType = item.type,
+                        status = item.status,
+                        latitude = item.latitude,
+                        longitude = item.longitude,
+                        createdAt = item.createdAt,
+                        username = item.user.username,
+                        email = item.user.email,
+                    )
+                )
+            },
+        )
         binding.recycler.layoutManager = LinearLayoutManager(requireContext())
         binding.recycler.adapter = adapter
 

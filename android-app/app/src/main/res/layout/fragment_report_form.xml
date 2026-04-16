@@ -1,164 +1,137 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+    <!-- 4dp indeterminate progress strip; only visible during active API calls -->
+    <androidx.core.widget.ContentLoadingProgressBar
+        android:id="@+id/topProgress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="4dp"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Camera preview + captured image preview stacked; toggled by visibility. -->
-        <FrameLayout
+    <!-- Fixed 280dp preview holder — leaves the full bottom half for the form. -->
+    <FrameLayout
+        android:id="@+id/previewHolder"
+        android:layout_width="0dp"
+        android:layout_height="280dp"
+        android:background="#222"
+        app:layout_constraintTop_toBottomOf="@id/topProgress"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.camera.view.PreviewView
+            android:id="@+id/previewView"
             android:layout_width="match_parent"
-            android:layout_height="260dp"
-            android:background="#222">
+            android:layout_height="match_parent" />
 
-            <androidx.camera.view.PreviewView
-                android:id="@+id/previewView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-            <ImageView
-                android:id="@+id/ivCaptured"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:visibility="gone"
-                android:contentDescription="@string/capture_ready" />
-        </FrameLayout>
-
-        <!-- Capture button (visible before capture) -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnCapture"
+        <ImageView
+            android:id="@+id/ivCaptured"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="12dp"
-            android:text="@string/btn_capture"
-            app:icon="@android:drawable/ic_menu_camera" />
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:contentDescription="@string/capture_ready" />
+    </FrameLayout>
 
-        <!-- Retake + Use this photo (visible after capture, before confirm) -->
+    <!-- Scrollable form area below the preview. All controls always visible. -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/formScroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:paddingHorizontal="16dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        app:layout_constraintTop_toBottomOf="@id/previewHolder"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
         <LinearLayout
-            android:id="@+id/confirmRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal"
-            android:visibility="gone">
+            android:orientation="vertical"
+            android:paddingVertical="12dp">
 
+            <!-- Capture button (visible before capture) -->
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnRetake"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="6dp"
-                android:layout_weight="1"
-                android:text="@string/btn_retake" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnUsePhoto"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:layout_weight="1"
-                android:text="@string/btn_use_photo" />
-        </LinearLayout>
-
-        <!-- Form (hidden until the user confirms the photo) -->
-        <androidx.core.widget.NestedScrollView
-            android:id="@+id/formScroll"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:padding="16dp"
-            android:visibility="gone">
-
-            <LinearLayout
+                android:id="@+id/btnCapture"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:text="@string/btn_capture"
+                app:icon="@android:drawable/ic_menu_camera" />
 
-                <TextView
-                    android:id="@+id/tvLocation"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/loc_waiting"
-                    android:textSize="14sp"
-                    android:drawableStart="@android:drawable/ic_menu_mylocation"
-                    android:drawablePadding="8dp"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="16dp" />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tilDescription"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/desc_hint">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etDescription"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="textMultiLine|textCapSentences"
-                        android:minLines="3"
-                        android:maxLines="5"
-                        android:gravity="top|start"
-                        android:imeOptions="actionDone" />
-                </com.google.android.material.textfield.TextInputLayout>
+            <!-- Retake + Use this photo (visible after capture, before confirm) -->
+            <LinearLayout
+                android:id="@+id/confirmRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal"
+                android:visibility="gone">
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnSubmit"
+                    android:id="@+id/btnRetake"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:text="@string/btn_retake" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnUsePhoto"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:text="@string/btn_use_photo" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvLocation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:drawableStart="@android:drawable/ic_menu_mylocation"
+                android:drawablePadding="8dp"
+                android:gravity="center_vertical"
+                android:text="@string/loc_waiting"
+                android:textSize="14sp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="@string/desc_hint">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etDescription"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:enabled="false"
-                    android:text="@string/btn_submit" />
+                    android:gravity="top|start"
+                    android:imeOptions="actionDone"
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:maxLines="4"
+                    android:minLines="2" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-                <ProgressBar
-                    android:id="@+id/progress"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="12dp"
-                    android:visibility="gone" />
-            </LinearLayout>
-        </androidx.core.widget.NestedScrollView>
-    </LinearLayout>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSubmit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:enabled="false"
+                android:text="@string/btn_submit" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
-    <!-- Full-screen success overlay (played once on 200) -->
-    <FrameLayout
-        android:id="@+id/successOverlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#E6FFFFFF"
-        android:clickable="true"
-        android:focusable="true"
-        android:visibility="gone">
-
-        <com.airbnb.lottie.LottieAnimationView
-            android:id="@+id/lottieSuccess"
-            android:layout_width="220dp"
-            android:layout_height="220dp"
-            android:layout_gravity="center"
-            app:lottie_autoPlay="false"
-            app:lottie_loop="false" />
-
-        <TextView
-            android:id="@+id/tvSuccess"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="200dp"
-            android:paddingHorizontal="32dp"
-            android:gravity="center"
-            android:textColor="#1565C0"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:text="@string/capture_ready" />
-    </FrameLayout>
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

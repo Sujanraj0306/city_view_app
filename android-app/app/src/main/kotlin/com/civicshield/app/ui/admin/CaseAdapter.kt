@@ -17,6 +17,7 @@ import com.civicshield.app.databinding.ItemCaseBinding
 
 class CaseAdapter(
     private val onStatusChanged: (caseId: String, newStatus: String) -> Unit,
+    private val onRowClick: (CaseAdminItem) -> Unit = {},
 ) : ListAdapter<CaseAdminItem, CaseAdapter.CaseVH>(DIFF) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CaseVH {
@@ -43,6 +44,10 @@ class CaseAdapter(
                 STATUSES,
             ).apply { setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
             binding.spinnerStatus.adapter = spinnerAdapter
+
+            binding.root.setOnClickListener {
+                boundItem?.let(onRowClick)
+            }
 
             binding.spinnerStatus.onItemSelectedListener =
                 object : AdapterView.OnItemSelectedListener {

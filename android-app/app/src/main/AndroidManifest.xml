@@ -6,6 +6,8 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <uses-feature android:name="android.hardware.camera" android:required="true" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
@@ -34,6 +36,16 @@
         <activity
             android:name=".ui.admin.AdminHomeActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".ui.admin.AdminCaseDetailActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.admin.AdminHomeActivity" />
+
+        <activity
+            android:name=".ui.agent.AgentActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.user.UserHomeActivity" />
 
         <service
             android:name=".push.CivicFirebaseService"

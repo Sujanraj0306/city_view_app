@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -45,6 +45,7 @@ class UserMini(BaseModel):
     id: int
     username: str
     role: str
+    email: str | None = None
 
 
 class CaseAdminOut(BaseModel):
@@ -78,3 +79,104 @@ class CaseStatusUpdateResponse(BaseModel):
     case_id: UUID
     status: str
     push_sent: bool
+
+
+class BoundingBox(BaseModel):
+    x: float
+    y: float
+    width: float
+    height: float
+
+
+class CaseAnalysisResponse(BaseModel):
+    case_id: UUID
+    scene_description: str
+    violation_confirmed: bool
+    vehicle_number: str | None
+    violation_zone: str
+    severity: Literal["low", "medium", "high"]
+    bounding_box: BoundingBox | None
+    cached: bool
+
+
+class CaseAddressResponse(BaseModel):
+    case_id: UUID
+    display_name: str
+
+
+# ---------------------------------------------------------------------------
+# Analytics dashboard
+# ---------------------------------------------------------------------------
+
+
+class AnalyticsSummary(BaseModel):
+    total: int
+    pending: int
+    verified: int
+    in_progress: int
+    completed: int
+
+
+class DailyCountPoint(BaseModel):
+    date: str  # YYYY-MM-DD
+    count: int
+
+
+class DailyCountsResponse(BaseModel):
+    days: int
+    points: list[DailyCountPoint]
+
+
+class TopZonePoint(BaseModel):
+    lat: float
+    lng: float
+    total: int
+    helmet_count: int
+    pothole_count: int
+
+
+class TopZonesResponse(BaseModel):
+    limit: int
+    zones: list[TopZonePoint]
+
+
+class ResolutionTrendPoint(BaseModel):
+    week_start: str  # YYYY-MM-DD (Monday)
+    avg_days: float
+    resolved_count: int
+
+
+class ResolutionTrendResponse(BaseModel):
+    weeks: int
+    points: list[ResolutionTrendPoint]
+
+
+class RecentActivityItem(BaseModel):
+    case_id: UUID
+    case_type: str
+    old_status: str | None
+    new_status: str
+    changed_at: datetime
+    username: str | None
+
+
+class RecentActivityResponse(BaseModel):
+    items: list[RecentActivityItem]
+
+
+# ---------------------------------------------------------------------------
+# Conversational agent
+# ---------------------------------------------------------------------------
+
+
+class AgentChatRequest(BaseModel):
+    user_id: str
+    session_id: str
+    message: str = Field(default="", max_length=2000)
+    image_base64: str | None = None
+
+
+class AgentChatResponse(BaseModel):
+    reply: str
+    action: Literal["open_camera", "show_cases", "submit_report"] | None = None
+    data: dict[str, Any] = Field(default_factory=dict)

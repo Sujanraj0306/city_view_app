@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:navigationIcon="@android:drawable/ic_menu_close_clear_cancel"
+            app:title="@string/detail_title"
+            app:titleTextColor="@color/white" />
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="24dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Hero image with shimmer placeholder + optional bounding-box overlay -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="240dp">
+
+                <com.facebook.shimmer.ShimmerFrameLayout
+                    android:id="@+id/imageShimmer"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_shimmer_placeholder" />
+                </com.facebook.shimmer.ShimmerFrameLayout>
+
+                <ImageView
+                    android:id="@+id/imgCase"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="@string/detail_title" />
+
+                <!-- Overlay that draws the Gemini bounding box (helmet cases with bbox) -->
+                <com.civicshield.app.ui.admin.BoundingBoxOverlay
+                    android:id="@+id/bboxOverlay"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tvImageFail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="@string/detail_image_failed"
+                    android:textColor="#BBBBBB"
+                    android:visibility="gone" />
+            </FrameLayout>
+
+            <!-- Gemini Analysis card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="12dp"
+                android:background="@drawable/bg_detail_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/detail_gemini_header"
+                    android:textColor="#222"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <androidx.core.widget.ContentLoadingProgressBar
+                    android:id="@+id/analysisProgress"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="4dp"
+                    android:layout_marginTop="10dp"
+                    android:indeterminate="true"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tvAnalysisStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/detail_analyzing"
+                    android:textColor="#666"
+                    android:textSize="13sp"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/analysisGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <include
+                        android:id="@+id/rowScene"
+                        layout="@layout/row_detail_label_value" />
+
+                    <include
+                        android:id="@+id/rowViolation"
+                        layout="@layout/row_detail_label_value" />
+
+                    <include
+                        android:id="@+id/rowVehicle"
+                        layout="@layout/row_detail_label_value" />
+
+                    <include
+                        android:id="@+id/rowZone"
+                        layout="@layout/row_detail_label_value" />
+
+                    <include
+                        android:id="@+id/rowSeverity"
+                        layout="@layout/row_detail_label_value" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Location card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="12dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_detail_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/detail_location_header"
+                    android:textColor="#222"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/detail_location_fetching"
+                    android:textColor="#222"
+                    android:textSize="14sp"
+                    tools:text="42B Anna Salai, Coimbatore" />
+            </LinearLayout>
+
+            <!-- Complainant card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="12dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_detail_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/detail_complainant_header"
+                    android:textColor="#222"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <include
+                    android:id="@+id/rowUsername"
+                    layout="@layout/row_detail_label_value"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" />
+
+                <include
+                    android:id="@+id/rowEmail"
+                    layout="@layout/row_detail_label_value" />
+
+                <include
+                    android:id="@+id/rowSubmittedAt"
+                    layout="@layout/row_detail_label_value" />
+            </LinearLayout>
+
+            <!-- Status toggle -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="12dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_detail_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/detail_status_header"
+                    android:textColor="#222"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/statusToggleGroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:singleSelection="true"
+                    app:selectionRequired="true">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnPending"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/status_pending"
+                        android:textColor="#FFFFFF"
+                        app:backgroundTint="#9E9E9E"
+                        app:strokeColor="#9E9E9E" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnVerified"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/status_verified"
+                        android:textColor="#FFFFFF"
+                        app:backgroundTint="#1976D2"
+                        app:strokeColor="#1976D2" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnInProgress"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/status_in_progress"
+                        android:textColor="#FFFFFF"
+                        app:backgroundTint="#F57C00"
+                        app:strokeColor="#F57C00" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCompleted"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/status_completed"
+                        android:textColor="#FFFFFF"
+                        app:backgroundTint="#43A047"
+                        app:strokeColor="#43A047" />
+
+                </com.google.android.material.button.MaterialButtonToggleGroup>
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

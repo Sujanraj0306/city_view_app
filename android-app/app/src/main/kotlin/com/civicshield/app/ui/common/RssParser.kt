@@ -24,6 +24,11 @@ object RssParser {
         var pubDate = ""
         var guid = ""
         var link: String? = null
+        var category: String? = null
+        var caseId: String? = null
+        var statusField: String? = null
+        var imageUrl: String? = null
+        var address: String? = null
 
         var event = parser.eventType
         while (event != XmlPullParser.END_DOCUMENT) {
@@ -33,6 +38,12 @@ object RssParser {
                     if (currentTag == "item") {
                         insideItem = true
                         title = ""; description = ""; pubDate = ""; guid = ""; link = null
+                        category = null; caseId = null; statusField = null
+                        imageUrl = null; address = null
+                    } else if (insideItem && currentTag == "enclosure") {
+                        // <enclosure url="..." type="..." length="..."/>
+                        val url = parser.getAttributeValue(null, "url")
+                        if (!url.isNullOrBlank()) imageUrl = url
                     }
                 }
                 XmlPullParser.TEXT -> {
@@ -44,6 +55,11 @@ object RssParser {
                             "pubDate" -> pubDate = text
                             "guid" -> guid = text
                             "link" -> link = text
+                            "category" -> category = text
+                            "caseId" -> caseId = text
+                            "status" -> statusField = text
+                            "imageUrl" -> if (imageUrl.isNullOrBlank()) imageUrl = text
+                            "address" -> address = text
                         }
                     }
                 }
@@ -56,6 +72,11 @@ object RssParser {
                                 description = description,
                                 pubDate = pubDate,
                                 link = link,
+                                caseId = caseId,
+                                type = category?.lowercase(),
+                                status = statusField?.lowercase(),
+                                imageUrl = imageUrl,
+                                address = address,
                             )
                         )
                         insideItem = false
@@ -77,6 +98,33 @@ object RssParser {
             OUT.format(parsed)
         } catch (_: Exception) {
             raw
+        }
+    }
+
+    /** "2 hours ago", "Yesterday", "3 days ago", or a fallback date for older items. */
+    fun relativePubDate(raw: String): String {
+        if (raw.isBlank()) return ""
+        val parsed: Date = try {
+            RFC_2822.parse(raw) ?: return formatPubDate(raw)
+        } catch (_: Exception) {
+            return formatPubDate(raw)
+        }
+        val nowMs = System.currentTimeMillis()
+        val diffMs = nowMs - parsed.time
+        if (diffMs < 0) return formatPubDate(raw)
+        val secs = diffMs / 1_000
+        val mins = secs / 60
+        val hours = mins / 60
+        val days = hours / 24
+        return when {
+            secs < 45 -> "just now"
+            secs < 90 -> "a minute ago"
+            mins < 45 -> "$mins minutes ago"
+            mins < 90 -> "an hour ago"
+            hours < 24 -> "$hours hours ago"
+            days < 2 -> "Yesterday"
+            days < 7 -> "$days days ago"
+            else -> formatPubDate(raw)
         }
     }
 

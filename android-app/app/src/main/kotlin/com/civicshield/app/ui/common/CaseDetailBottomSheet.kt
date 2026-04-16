@@ -4,9 +4,11 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -14,8 +16,12 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.civicshield.app.BuildConfig
 import com.civicshield.app.R
+import com.civicshield.app.data.api.RetrofitClient
 import com.civicshield.app.databinding.BottomSheetCaseDetailBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -43,6 +49,8 @@ class CaseDetailBottomSheet : BottomSheetDialogFragment() {
         val status = args.getString(ARG_STATUS).orEmpty()
         val aiDescription = args.getString(ARG_AI_DESC).orEmpty()
         val createdAt = args.getString(ARG_CREATED_AT).orEmpty()
+        val lat = args.getDouble(ARG_LAT, Double.NaN)
+        val lng = args.getDouble(ARG_LNG, Double.NaN)
 
         binding.tvCaseId.text = getString(R.string.sheet_case_id, caseId.take(8))
 
@@ -81,6 +89,39 @@ class CaseDetailBottomSheet : BottomSheetDialogFragment() {
                 ): Boolean = false
             })
             .into(binding.imgCase)
+
+        fetchAddress(caseId, lat, lng)
+    }
+
+    private fun fetchAddress(caseId: String, lat: Double, lng: Double) {
+        if (caseId.isBlank()) {
+            renderAddressFallback(lat, lng)
+            return
+        }
+        val api = RetrofitClient.create(requireContext().applicationContext)
+        viewLifecycleOwner.lifecycleScope.launch {
+            val result = runCatching {
+                withContext(Dispatchers.IO) { api.getCaseAddress(caseId) }
+            }
+            val bind = _binding ?: return@launch
+            result.onSuccess { addr ->
+                val display = addr.displayName.takeIf { it.isNotBlank() }
+                if (display != null) bind.tvAddress.text = display
+                else renderAddressFallback(lat, lng)
+            }.onFailure { e ->
+                Log.i(TAG, "address lookup failed: ${e.message}")
+                renderAddressFallback(lat, lng)
+            }
+        }
+    }
+
+    private fun renderAddressFallback(lat: Double, lng: Double) {
+        val bind = _binding ?: return
+        bind.tvAddress.text = if (lat.isNaN() || lng.isNaN()) {
+            getString(R.string.detail_value_na)
+        } else {
+            getString(R.string.detail_location_fallback, lat, lng)
+        }
     }
 
     override fun onDestroyView() {
@@ -114,11 +155,15 @@ class CaseDetailBottomSheet : BottomSheetDialogFragment() {
     }
 
     companion object {
+        private const val TAG = "CaseDetailSheet"
+
         private const val ARG_ID = "case_id"
         private const val ARG_TYPE = "type"
         private const val ARG_STATUS = "status"
         private const val ARG_AI_DESC = "ai_desc"
         private const val ARG_CREATED_AT = "created_at"
+        private const val ARG_LAT = "lat"
+        private const val ARG_LNG = "lng"
 
         fun newInstance(
             caseId: String,
@@ -126,6 +171,8 @@ class CaseDetailBottomSheet : BottomSheetDialogFragment() {
             status: String,
             aiDescription: String?,
             createdAt: String,
+            latitude: Double = Double.NaN,
+            longitude: Double = Double.NaN,
         ): CaseDetailBottomSheet = CaseDetailBottomSheet().apply {
             arguments = Bundle().apply {
                 putString(ARG_ID, caseId)
@@ -133,6 +180,8 @@ class CaseDetailBottomSheet : BottomSheetDialogFragment() {
                 putString(ARG_STATUS, status)
                 putString(ARG_AI_DESC, aiDescription.orEmpty())
                 putString(ARG_CREATED_AT, createdAt)
+                putDouble(ARG_LAT, latitude)
+                putDouble(ARG_LNG, longitude)
             }
         }
     }

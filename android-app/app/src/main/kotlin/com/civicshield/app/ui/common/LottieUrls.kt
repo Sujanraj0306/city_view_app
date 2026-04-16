@@ -10,4 +10,5 @@ object LottieUrls {
     const val LOGIN_SHIELD = "https://assets9.lottiefiles.com/packages/lf20_kkflmtur.json"
     const val SUCCESS_CHECK = "https://assets4.lottiefiles.com/packages/lf20_jbrw3hcz.json"
     const val WARNING = "https://assets7.lottiefiles.com/packages/lf20_qpwbiyxf.json"
+    const val EMPTY_FEED = "https://assets9.lottiefiles.com/packages/lf20_ndt8zfny.json"
 }

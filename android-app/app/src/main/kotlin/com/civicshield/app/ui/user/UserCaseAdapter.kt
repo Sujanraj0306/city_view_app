@@ -11,6 +11,11 @@ import com.civicshield.app.R
 import com.civicshield.app.data.model.CaseAdminItem
 import com.civicshield.app.databinding.ItemUserCaseBinding
 
+/**
+ * Gson bypasses Kotlin's null-checks via reflection, so any non-null field in
+ * [CaseAdminItem] can still come through as null from the backend. Every access
+ * here is defensive so one malformed row can never crash the whole list.
+ */
 class UserCaseAdapter : ListAdapter<CaseAdminItem, UserCaseAdapter.VH>(DIFF) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -27,23 +32,30 @@ class UserCaseAdapter : ListAdapter<CaseAdminItem, UserCaseAdapter.VH>(DIFF) {
     class VH(private val binding: ItemUserCaseBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: CaseAdminItem) {
             val ctx = binding.root.context
-            binding.tvType.text = item.type.replaceFirstChar { it.uppercase() }
-            binding.tvType.backgroundTintList = ColorStateList.valueOf(
-                when (item.type) {
-                    "helmet" -> Color.parseColor("#E53935")
-                    "pothole" -> Color.parseColor("#FB8C00")
-                    else -> Color.GRAY
-                }
-            )
-            binding.tvCaseId.text = ctx.getString(R.string.case_id_short, item.id.take(8))
-            binding.tvLocation.text = ctx.getString(
-                R.string.loc_format, item.latitude, item.longitude
-            )
-            binding.tvDescription.text =
-                (item.aiDescription ?: item.userDescription).ifBlank { "—" }
 
-            binding.tvStatus.text = item.status.replace('_', ' ')
-            binding.tvStatus.backgroundTintList = ColorStateList.valueOf(statusColor(item.status))
+            val safeType = (item.type ?: "").ifBlank { "unknown" }
+            binding.tvType.text = safeType.replaceFirstChar { it.uppercase() }
+            binding.tvType.backgroundTintList = ColorStateList.valueOf(typeColor(safeType))
+
+            val safeId = (item.id ?: "").take(8).ifBlank { "——" }
+            binding.tvCaseId.text = ctx.getString(R.string.case_id_short, safeId)
+
+            binding.tvLocation.text = ctx.getString(
+                R.string.loc_format, item.latitude ?: 0.0, item.longitude ?: 0.0
+            )
+
+            binding.tvDescription.text =
+                (item.aiDescription ?: item.userDescription ?: "").ifBlank { "—" }
+
+            val safeStatus = (item.status ?: "pending")
+            binding.tvStatus.text = safeStatus.replace('_', ' ')
+            binding.tvStatus.backgroundTintList = ColorStateList.valueOf(statusColor(safeStatus))
+        }
+
+        private fun typeColor(type: String): Int = when (type) {
+            "helmet" -> Color.parseColor("#E53935")
+            "pothole" -> Color.parseColor("#FB8C00")
+            else -> Color.GRAY
         }
 
         private fun statusColor(status: String): Int = when (status) {

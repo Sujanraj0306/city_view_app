@@ -26,6 +26,7 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     password_hash: Mapped[str] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(16), default="user")
     fcm_token: Mapped[str | None] = mapped_column(String(512), nullable=True)
@@ -64,6 +65,25 @@ class Case(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
 
     user: Mapped[User] = relationship(back_populates="cases")
+
+
+class CaseStatusEvent(Base):
+    """Audit row written every time an admin changes a case's status.
+
+    Used by /analytics/recent-activity and /analytics/resolution-trend.
+    """
+
+    __tablename__ = "case_status_events"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    case_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("cases.id"), index=True
+    )
+    old_status: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    new_status: Mapped[str] = mapped_column(String(16))
+    changed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), index=True
+    )
 
 
 class ZoneStat(Base):

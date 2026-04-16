@@ -89,6 +89,9 @@ dependencies {
     // Image loading for case photos in the map bottom sheet
     implementation("com.github.bumptech.glide:glide:4.16.0")
 
+    // Shimmer placeholder for images while loading
+    implementation("com.facebook.shimmer:shimmer:0.5.0")
+
     // Lottie animations
     implementation("com.airbnb.android:lottie:6.3.0")
 

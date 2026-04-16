@@ -13,7 +13,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.civicshield.app.BuildConfig
 import com.civicshield.app.R
 import com.civicshield.app.data.api.ApiService
 import com.civicshield.app.data.api.RetrofitClient
@@ -23,7 +22,6 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
@@ -43,12 +41,8 @@ open class CaseMapFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val ctx = requireContext().applicationContext
-        Configuration.getInstance().apply {
-            load(ctx, ctx.getSharedPreferences("osmdroid", Context.MODE_PRIVATE))
-            userAgentValue = BuildConfig.APPLICATION_ID
-        }
-        api = RetrofitClient.create(ctx)
+        // OSMDroid is configured once in CivicShieldApp.onCreate — don't re-init here.
+        api = RetrofitClient.create(requireContext().applicationContext)
     }
 
     override fun onCreateView(
@@ -134,11 +128,18 @@ open class CaseMapFragment : Fragment() {
     private fun renderMarkers(map: MapView, cases: List<CaseAdminItem>) {
         val ctx = requireContext()
         cases.forEach { c ->
+            val completed = c.status == "completed"
+            val color = when {
+                completed -> COLOR_COMPLETED
+                c.type == "helmet" -> COLOR_HELMET
+                c.type == "pothole" -> COLOR_POTHOLE
+                else -> Color.GRAY
+            }
             val marker = Marker(map).apply {
                 position = GeoPoint(c.latitude, c.longitude)
-                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                title = c.type.replaceFirstChar { it.uppercase() } + " · " + c.status
-                icon = pinDrawable(ctx, pinColorFor(c))
+                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                title = c.id.ifBlank { "—" }
+                icon = circleIcon(ctx, color, withCheck = completed)
                 setOnMarkerClickListener { _, _ ->
                     openDetail(c)
                     true
@@ -158,44 +159,47 @@ open class CaseMapFragment : Fragment() {
         ).show(childFragmentManager, "case_detail")
     }
 
-    private fun pinColorFor(c: CaseAdminItem): Int = when {
-        c.status == "completed" -> COLOR_COMPLETED
-        c.type == "helmet" -> COLOR_HELMET
-        c.type == "pothole" -> COLOR_POTHOLE
-        else -> Color.GRAY
-    }
-
-    private fun pinDrawable(ctx: Context, color: Int): BitmapDrawable {
+    /**
+     * Draws a solid-color circle with a 2dp white stroke. When [withCheck] is true
+     * (completed cases) a white checkmark is stroked on top.
+     */
+    private fun circleIcon(ctx: Context, color: Int, withCheck: Boolean): BitmapDrawable {
         val d = ctx.resources.displayMetrics.density
-        val w = (28 * d).toInt()
-        val h = (40 * d).toInt()
-        val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val size = (28 * d).toInt()
+        val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)
-        val cx = w / 2f
-        val cyHead = w / 2f
-        val r = (w / 2f) - 2 * d
+        val cx = size / 2f
+        val cy = size / 2f
+        val r = (size / 2f) - (2 * d)
 
-        val path = Path().apply {
-            addCircle(cx, cyHead, r, Path.Direction.CW)
-            moveTo(cx - r * 0.55f, cyHead + r * 0.75f)
-            lineTo(cx, h.toFloat() - 2 * d)
-            lineTo(cx + r * 0.55f, cyHead + r * 0.75f)
-            close()
+        val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.FILL
+            this.color = color
         }
+        canvas.drawCircle(cx, cy, r, fill)
 
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-        paint.color = color
-        paint.style = Paint.Style.FILL
-        canvas.drawPath(path, paint)
+        val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.STROKE
+            strokeWidth = 2 * d
+            this.color = Color.WHITE
+        }
+        canvas.drawCircle(cx, cy, r, stroke)
 
-        paint.color = Color.WHITE
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 2 * d
-        canvas.drawPath(path, paint)
-
-        paint.color = Color.WHITE
-        paint.style = Paint.Style.FILL
-        canvas.drawCircle(cx, cyHead, r * 0.35f, paint)
+        if (withCheck) {
+            val check = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                style = Paint.Style.STROKE
+                strokeWidth = 3 * d
+                strokeCap = Paint.Cap.ROUND
+                strokeJoin = Paint.Join.ROUND
+                this.color = Color.WHITE
+            }
+            val path = Path().apply {
+                moveTo(cx - r * 0.45f, cy + r * 0.02f)
+                lineTo(cx - r * 0.10f, cy + r * 0.40f)
+                lineTo(cx + r * 0.50f, cy - r * 0.35f)
+            }
+            canvas.drawPath(path, check)
+        }
 
         return BitmapDrawable(ctx.resources, bmp)
     }

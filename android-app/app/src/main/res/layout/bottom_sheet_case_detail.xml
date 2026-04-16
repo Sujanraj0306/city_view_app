@@ -122,5 +122,25 @@
             android:textColor="#222"
             android:textSize="14sp"
             tools:text="16 Apr 2026, 10:15" />
+
+        <TextView
+            android:id="@+id/tvAddressLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/detail_location_header"
+            android:textColor="#666"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="@string/detail_location_fetching"
+            android:textColor="#222"
+            android:textSize="14sp"
+            tools:text="42B Anna Salai, Coimbatore" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

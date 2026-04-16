@@ -2,6 +2,7 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="6dp"
@@ -11,36 +12,117 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="12dp">
+        android:minHeight="96dp"
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tvTitle"
-            android:layout_width="match_parent"
+        <!-- Accent left border: tinted at bind-time by type/status. -->
+        <View
+            android:id="@+id/vAccent"
+            android:layout_width="4dp"
+            android:layout_height="match_parent"
+            android:background="#9E9E9E" />
+
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:maxLines="2"
-            android:ellipsize="end" />
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingStart="12dp"
+            android:paddingEnd="8dp"
+            android:paddingVertical="12dp">
 
-        <TextView
-            android:id="@+id/tvDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="13sp"
-            android:layout_marginTop="4dp"
-            android:maxLines="3"
-            android:ellipsize="end"
-            android:textColor="?android:textColorSecondary" />
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textColor="#222"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                tools:text="Helmet Violation Confirmed — Case #A1B2" />
 
-        <TextView
-            android:id="@+id/tvDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="12sp"
-            android:layout_marginTop="6dp"
-            android:textColor="?android:textColorTertiary" />
+            <TextView
+                android:id="@+id/tvLocation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="#666"
+                android:textSize="12sp"
+                tools:text="42B Anna Salai, Coimbatore" />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_sheet_chip"
+                    android:backgroundTint="#9E9E9E"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="3dp"
+                    android:textAllCaps="true"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    tools:text="pending" />
+
+                <TextView
+                    android:id="@+id/tvRelativeTime"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="#888"
+                    android:textSize="12sp"
+                    tools:text="2 hours ago" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Thumbnail container: shimmer sits behind the ImageView. -->
+        <FrameLayout
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="12dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp">
+
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/thumbShimmer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_shimmer_placeholder" />
+            </com.facebook.shimmer.ShimmerFrameLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#1A000000"
+                app:strokeWidth="1dp">
+
+                <ImageView
+                    android:id="@+id/ivThumb"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/nav_rss"
+                    android:scaleType="centerCrop" />
+            </com.google.android.material.card.MaterialCardView>
+        </FrameLayout>
     </LinearLayout>
-
 </com.google.android.material.card.MaterialCardView>

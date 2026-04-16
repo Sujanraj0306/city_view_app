@@ -18,6 +18,60 @@
 
     <!-- Shared -->
     <string name="nav_rss">RSS Feed</string>
+    <string name="menu_logout">Log out</string>
+
+    <!-- Admin map tabs -->
+    <string name="map_tab_plots">Case Plots</string>
+    <string name="map_tab_heatmap">Zone Heatmap</string>
+
+    <!-- User map tabs -->
+    <string name="user_map_tab_cases">My Cases</string>
+    <string name="user_map_tab_zones">Zone Map</string>
+    <string name="fab_center_on_me">Center on my location</string>
+    <string name="user_map_loc_permission">Location permission needed to center the map on you.</string>
+    <string name="user_map_loc_unavailable">Couldn\'t get your current location.</string>
+    <string name="map_filter_all">All</string>
+    <string name="map_filter_helmet">Helmet only</string>
+    <string name="map_filter_pothole">Pothole only</string>
+    <string name="map_filter_completed">Completed</string>
+    <string name="map_info_view_full">View Full</string>
+    <string name="map_info_case_id">Case: %1$s</string>
+    <string name="map_info_type">Type: %1$s</string>
+    <string name="map_info_complainant">By: %1$s</string>
+    <string name="map_heatmap_legend_header">Activity</string>
+    <string name="map_heatmap_low">Low · 0–2</string>
+    <string name="map_heatmap_medium">Medium · 3–6</string>
+    <string name="map_heatmap_high">High · 7+</string>
+    <string name="map_heatmap_empty">No zone data yet — submit some cases to populate the heatmap.</string>
+
+    <!-- Admin case detail -->
+    <string name="detail_title">Case detail</string>
+    <string name="detail_gemini_header">Gemini Analysis</string>
+    <string name="detail_analyzing">Running Gemini analysis…</string>
+    <string name="detail_analysis_failed">Analysis failed: %1$s</string>
+    <string name="detail_scene">Scene</string>
+    <string name="detail_violation">Violation confirmed</string>
+    <string name="detail_vehicle">Vehicle number</string>
+    <string name="detail_zone">Zone</string>
+    <string name="detail_severity">Severity</string>
+    <string name="detail_location_header">Location</string>
+    <string name="detail_location_fetching">Looking up address…</string>
+    <string name="detail_location_fallback">(%1$.4f, %2$.4f)</string>
+    <string name="detail_complainant_header">Complainant</string>
+    <string name="detail_complainant_username">Username</string>
+    <string name="detail_complainant_email">Email</string>
+    <string name="detail_complainant_submitted">Submitted</string>
+    <string name="detail_status_header">Update status</string>
+    <string name="detail_status_updated">Status updated to %1$s</string>
+    <string name="detail_status_failed">Could not update status: %1$s</string>
+    <string name="detail_value_na">—</string>
+    <string name="detail_yes">Yes</string>
+    <string name="detail_no">No</string>
+    <string name="detail_image_failed">Image failed to load</string>
+    <string name="status_pending">Pending</string>
+    <string name="status_verified">Verified</string>
+    <string name="status_in_progress">In progress</string>
+    <string name="status_completed">Completed</string>
 
     <!-- Report screen -->
     <string name="btn_capture">Capture</string>
@@ -50,6 +104,23 @@
     <string name="analytics_top_zones">Top 10 zones by violation count</string>
     <string name="analytics_split">Helmet vs pothole split</string>
 
+    <!-- Analytics dashboard -->
+    <string name="analytics_header_summary">Case summary</string>
+    <string name="analytics_header_split">Helmet vs pothole</string>
+    <string name="analytics_header_daily">Last 7 days</string>
+    <string name="analytics_header_top_zones">Top 5 zones</string>
+    <string name="analytics_header_trend">Resolution time (days)</string>
+    <string name="analytics_header_activity">Recent activity</string>
+    <string name="analytics_stat_total">Total</string>
+    <string name="analytics_stat_pending">Pending</string>
+    <string name="analytics_stat_in_progress">In progress</string>
+    <string name="analytics_stat_completed">Completed</string>
+    <string name="analytics_empty_trend">No resolutions yet — mark cases completed to see a trend.</string>
+    <string name="analytics_empty_activity">No status changes yet.</string>
+    <string name="analytics_load_failed">Analytics load failed: %1$s</string>
+    <string name="activity_event_created">Case created</string>
+    <string name="activity_event_transition">%1$s \u2192 %2$s</string>
+
     <!-- RSS -->
     <string name="rss_empty">No RSS items yet.</string>
     <!-- My Cases -->
@@ -63,6 +134,38 @@
     <string name="map_load_failed">Could not load cases: %1$s</string>
     <string name="map_empty_user">No cases yet — submit one to see it here.</string>
     <string name="map_empty_admin">No cases in the system yet.</string>
+
+    <!-- Conversational agent -->
+    <string name="agent_open">Open CivicShield assistant</string>
+    <string name="agent_title">CivicShield Assistant</string>
+    <string name="agent_message_hint">Ask me anything…</string>
+    <string name="agent_send">Send message</string>
+    <string name="agent_mic">Voice input</string>
+    <string name="agent_attach">Attach image</string>
+    <string name="agent_attach_camera">Take a photo</string>
+    <string name="agent_attach_gallery">Pick from gallery</string>
+    <string name="agent_clear_attachment">Remove attachment</string>
+    <string name="agent_attached_label">Image attached — will be sent with your next message.</string>
+    <string name="agent_attach_failed">Could not read image.</string>
+    <string name="agent_camera_close">Close camera</string>
+    <string name="agent_capture">Capture</string>
+    <string name="agent_greeting">Hi! I can help you file a violation report or check the status of your cases. What would you like to do?</string>
+    <string name="agent_empty_reply">(no reply)</string>
+    <string name="agent_transport_error">I\'m having trouble reaching the server. Please try again.</string>
+    <string name="agent_user_image_only">(image attached)</string>
+    <string name="agent_mic_permission">Microphone permission is needed for voice input.</string>
+    <string name="agent_mic_unavailable">Speech recognition is not available on this device.</string>
+    <string name="agent_mic_error">Voice input failed (code %1$d).</string>
+    <string name="agent_your_cases">Your cases</string>
+    <string name="agent_close_cases">Close</string>
+    <string name="agent_submit_no_image">Please attach an image before submitting.</string>
+    <string name="agent_confirm_submit_title">Submit this report?</string>
+    <string name="agent_confirm_submit_msg">I\'ll file this as a %1$s violation with the attached photo and your current GPS.</string>
+    <string name="agent_submit_success">Filed case %1$s (status: %2$s)</string>
+    <string name="agent_submit_failed">Submit failed: %1$s</string>
+    <string name="agent_tts_toggle">Mute voice</string>
+    <string name="agent_tts_on">Voice on</string>
+    <string name="agent_tts_off">Voice muted</string>
 
     <!-- Case detail sheet -->
     <string name="sheet_case_id">Case %1$s</string>

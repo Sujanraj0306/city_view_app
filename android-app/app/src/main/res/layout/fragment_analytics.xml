@@ -1,42 +1,189 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="12dp">
+    android:layout_height="match_parent">
 
-    <LinearLayout
+    <androidx.core.widget.ContentLoadingProgressBar
+        android:id="@+id/topProgress"
+        style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="4dp"
+        android:indeterminate="true"
+        android:visibility="gone" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/analytics_top_zones"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:paddingVertical="12dp">
 
-        <com.github.mikephil.charting.charts.BarChart
-            android:id="@+id/barChart"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="260dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/analytics_split"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="8dp" />
+            android:orientation="vertical"
+            android:paddingHorizontal="8dp">
 
-        <com.github.mikephil.charting.charts.PieChart
-            android:id="@+id/pieChart"
-            android:layout_width="match_parent"
-            android:layout_height="300dp" />
+            <!-- 1. Summary stat row -->
+            <TextView
+                style="@style/AnalyticsHeader"
+                android:text="@string/analytics_header_summary" />
 
-    </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+            <LinearLayout
+                android:id="@+id/statRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal">
+
+                <include
+                    android:id="@+id/statTotal"
+                    layout="@layout/item_analytics_stat"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <include
+                    android:id="@+id/statPending"
+                    layout="@layout/item_analytics_stat"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <include
+                    android:id="@+id/statInProgress"
+                    layout="@layout/item_analytics_stat"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <include
+                    android:id="@+id/statCompleted"
+                    layout="@layout/item_analytics_stat"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <!-- 2. Donut: helmet vs pothole -->
+            <TextView
+                style="@style/AnalyticsHeader"
+                android:text="@string/analytics_header_split"
+                android:layout_marginTop="20dp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp">
+
+                <com.github.mikephil.charting.charts.PieChart
+                    android:id="@+id/pieChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="280dp"
+                    android:padding="8dp" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 3. Bar: last 7 days -->
+            <TextView
+                style="@style/AnalyticsHeader"
+                android:text="@string/analytics_header_daily"
+                android:layout_marginTop="20dp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp">
+
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/dailyBarChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="240dp"
+                    android:padding="8dp" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 4. Horizontal bar: top 5 zones -->
+            <TextView
+                style="@style/AnalyticsHeader"
+                android:text="@string/analytics_header_top_zones"
+                android:layout_marginTop="20dp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp">
+
+                <com.github.mikephil.charting.charts.HorizontalBarChart
+                    android:id="@+id/topZonesChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="240dp"
+                    android:padding="8dp" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 5. Line: resolution trend -->
+            <TextView
+                style="@style/AnalyticsHeader"
+                android:text="@string/analytics_header_trend"
+                android:layout_marginTop="20dp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id="@+id/trendLineChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="240dp"
+                        android:padding="8dp" />
+
+                    <TextView
+                        android:id="@+id/tvTrendEmpty"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="@string/analytics_empty_trend"
+                        android:textColor="#777"
+                        android:visibility="gone" />
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- 6. Recent activity feed -->
+            <TextView
+                style="@style/AnalyticsHeader"
+                android:text="@string/analytics_header_activity"
+                android:layout_marginTop="20dp" />
+
+            <TextView
+                android:id="@+id/tvActivityEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:paddingHorizontal="8dp"
+                android:text="@string/analytics_empty_activity"
+                android:textColor="#777"
+                android:textSize="13sp"
+                android:visibility="gone" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerActivity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</FrameLayout>

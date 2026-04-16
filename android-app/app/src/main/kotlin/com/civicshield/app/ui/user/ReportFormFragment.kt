@@ -95,13 +95,6 @@ class ReportFormFragment : Fragment() {
         binding.btnRetake.setOnClickListener { retake() }
         binding.btnUsePhoto.setOnClickListener { confirmPhoto() }
         binding.btnSubmit.setOnClickListener { submit() }
-
-        binding.lottieSuccess.apply {
-            setFailureListener { _ -> /* silently degrade */ }
-            setAnimationFromUrl(LottieUrls.SUCCESS_CHECK)
-            repeatCount = 0
-        }
-
         applyUiState(UiState.LIVE_CAMERA)
     }
 
@@ -123,10 +116,11 @@ class ReportFormFragment : Fragment() {
     }
 
     // -----------------------------------------------------------------------
-    // UI state machine
+    // UI state — only the preview/capture row toggles. The form below is
+    // always visible per spec.
     // -----------------------------------------------------------------------
 
-    private enum class UiState { LIVE_CAMERA, PHOTO_PREVIEW, FORM, SUCCESS }
+    private enum class UiState { LIVE_CAMERA, PHOTO_PREVIEW, CONFIRMED }
     private var uiState: UiState = UiState.LIVE_CAMERA
 
     private fun applyUiState(state: UiState) {
@@ -137,32 +131,24 @@ class ReportFormFragment : Fragment() {
                 b.previewView.visibility = View.VISIBLE
                 b.ivCaptured.visibility = View.GONE
                 b.btnCapture.visibility = View.VISIBLE
-                b.btnCapture.isEnabled = true
                 b.confirmRow.visibility = View.GONE
-                b.formScroll.visibility = View.GONE
-                b.successOverlay.visibility = View.GONE
             }
             UiState.PHOTO_PREVIEW -> {
                 b.previewView.visibility = View.GONE
                 b.ivCaptured.visibility = View.VISIBLE
                 b.btnCapture.visibility = View.GONE
                 b.confirmRow.visibility = View.VISIBLE
-                b.formScroll.visibility = View.GONE
-                b.successOverlay.visibility = View.GONE
             }
-            UiState.FORM -> {
+            UiState.CONFIRMED -> {
                 b.previewView.visibility = View.GONE
                 b.ivCaptured.visibility = View.VISIBLE
-                b.btnCapture.visibility = View.GONE
+                b.btnCapture.visibility = View.VISIBLE
+                b.btnCapture.text = getString(R.string.btn_retake)
                 b.confirmRow.visibility = View.GONE
-                b.formScroll.visibility = View.VISIBLE
-                b.successOverlay.visibility = View.GONE
-                refreshSubmitEnabled()
-            }
-            UiState.SUCCESS -> {
-                b.successOverlay.visibility = View.VISIBLE
             }
         }
+        if (state != UiState.CONFIRMED) b.btnCapture.text = getString(R.string.btn_capture)
+        refreshSubmitEnabled()
     }
 
     // -----------------------------------------------------------------------
@@ -236,6 +222,11 @@ class ReportFormFragment : Fragment() {
     }
 
     private fun takePhoto() {
+        // If we're already in CONFIRMED state, treat this as "retake".
+        if (uiState == UiState.CONFIRMED) {
+            retake()
+            return
+        }
         val ic = imageCapture ?: run {
             showSnack("Camera not ready")
             return
@@ -287,6 +278,7 @@ class ReportFormFragment : Fragment() {
                 .into(binding.ivCaptured)
 
             stopCamera()
+            binding.btnCapture.isEnabled = true
             applyUiState(UiState.PHOTO_PREVIEW)
         }
     }
@@ -300,7 +292,7 @@ class ReportFormFragment : Fragment() {
     }
 
     private fun confirmPhoto() {
-        applyUiState(UiState.FORM)
+        applyUiState(UiState.CONFIRMED)
         if (latitude == null || longitude == null) fetchLocation()
     }
 
@@ -334,7 +326,8 @@ class ReportFormFragment : Fragment() {
     private fun refreshSubmitEnabled() {
         val b = _binding ?: return
         b.btnSubmit.isEnabled =
-            capturedBase64 != null && latitude != null && longitude != null
+            uiState == UiState.CONFIRMED &&
+                capturedBase64 != null && latitude != null && longitude != null
     }
 
     // -----------------------------------------------------------------------
@@ -354,7 +347,7 @@ class ReportFormFragment : Fragment() {
         }
         val description = binding.etDescription.text?.toString()?.trim().orEmpty()
 
-        binding.progress.visibility = View.VISIBLE
+        binding.topProgress.show()
         binding.btnSubmit.isEnabled = false
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -366,9 +359,9 @@ class ReportFormFragment : Fragment() {
                         ReportType.POTHOLE -> api.reportPothole(req)
                     }
                 }
-                playSuccessAndReset(response.caseId)
+                showSnack(getString(R.string.success_toast, response.caseId.take(8)))
+                resetAfterSuccess()
             } catch (e: HttpException) {
-                val b = _binding ?: return@launch
                 if (e.code() == 422) {
                     val reason = extractRejectionReason(e)
                     shakeSubmit()
@@ -376,13 +369,14 @@ class ReportFormFragment : Fragment() {
                 } else {
                     showSnack("Upload failed (${e.code()}): ${e.message()}")
                 }
-                b.progress.visibility = View.GONE
-                refreshSubmitEnabled()
             } catch (e: Exception) {
-                val b = _binding ?: return@launch
+                Log.w(TAG, "submit failed", e)
                 showSnack("Upload failed: ${e.message}")
-                b.progress.visibility = View.GONE
-                refreshSubmitEnabled()
+            } finally {
+                _binding?.let {
+                    it.topProgress.hide()
+                    refreshSubmitEnabled()
+                }
             }
         }
     }
@@ -441,23 +435,13 @@ class ReportFormFragment : Fragment() {
             .show()
     }
 
-    private fun playSuccessAndReset(caseId: String) {
-        val b = _binding ?: return
-        b.progress.visibility = View.GONE
-        b.tvSuccess.text = getString(R.string.success_toast, caseId.take(8))
-        applyUiState(UiState.SUCCESS)
-        b.lottieSuccess.playAnimation()
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            kotlinx.coroutines.delay(1800)
-            val bind = _binding ?: return@launch
-            bind.etDescription.setText("")
-            capturedBase64 = null
-            capturedBitmap?.recycle()
-            capturedBitmap = null
-            applyUiState(UiState.LIVE_CAMERA)
-            ensurePermissionsAndStart()
-        }
+    private fun resetAfterSuccess() {
+        capturedBitmap?.recycle()
+        capturedBitmap = null
+        capturedBase64 = null
+        _binding?.etDescription?.setText("")
+        applyUiState(UiState.LIVE_CAMERA)
+        ensurePermissionsAndStart()
     }
 
     private fun showSnack(message: String) {

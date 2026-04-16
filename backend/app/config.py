@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     HDFS_USER: str = "root"
     AI_SERVICE_URL: str = "http://ai-service:8001"
 
+    BACKEND_PUBLIC_URL: str = "http://localhost:8000"
+
     JWT_SECRET: str = "change-me"
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 60 * 24

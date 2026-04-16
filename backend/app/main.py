@@ -1,5 +1,6 @@
 import logging
 import uuid
+from contextlib import asynccontextmanager
 from typing import Awaitable, Callable
 
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -8,20 +9,35 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
-from . import ai_service, hdfs_service, schemas
+from . import ai_service, email_service, hdfs_service, kafka_service, schemas
 from .auth import create_access_token, get_current_user, verify_password
-from .config import settings
 from .database import SessionLocal, get_db
-from .events import emit
 from .models import Case, User
-from .notifier import send_alert_email
 from .seed import seed_users
 
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("civicshield.backend")
 
-app = FastAPI(title="CivicShield Backend", version="0.4.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    db = SessionLocal()
+    try:
+        seed_users(db)
+    finally:
+        db.close()
+
+    await kafka_service.start_producer()
+    await kafka_service.start_consumer()
+    try:
+        yield
+    finally:
+        await kafka_service.stop_consumer()
+        await kafka_service.stop_producer()
+
+
+app = FastAPI(title="CivicShield Backend", version="0.5.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,15 +46,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-def on_startup() -> None:
-    db = SessionLocal()
-    try:
-        seed_users(db)
-    finally:
-        db.close()
 
 
 @app.get("/health")
@@ -70,10 +77,6 @@ def save_fcm_token(
     current_user.fcm_token = payload.fcm_token
     db.commit()
     return schemas.OkResponse()
-
-
-# Helmet violations go to police; potholes to the municipal corporation
-_EMAIL_ROUTE = {"helmet": "police", "pothole": "corporation"}
 
 
 async def _create_report(
@@ -115,36 +118,22 @@ async def _create_report(
     db.commit()
     db.refresh(case)
 
-    emit(
-        settings.KAFKA_CIVIC_REPORTS_TOPIC,
-        {
-            "case_id": str(case.id),
-            "type": case.type,
-            "user_id": case.user_id,
-            "latitude": case.latitude,
-            "longitude": case.longitude,
-            "ai_verified": case.ai_verified,
-            "ai_confidence": case.ai_confidence,
-            "label": label,
-            "status": case.status,
-            "image_hdfs_path": case.image_hdfs_path,
-            "created_at": case.created_at.isoformat() if case.created_at else None,
-        },
+    await kafka_service.publish_report(
+        case_id=case.id,
+        case_type=case.type,
+        lat=case.latitude,
+        lng=case.longitude,
+        ai_verified=case.ai_verified,
     )
 
     if detected:
-        subject = f"Verified {case.type} report ({case.id})"
-        body = (
-            f"Case ID: {case.id}\n"
-            f"Type: {case.type}\n"
-            f"Label: {label}\n"
-            f"Confidence: {confidence:.2f}\n"
-            f"Location: ({case.latitude}, {case.longitude})\n"
-            f"Reporter: {current_user.username}\n"
-            f"Description: {case.description}\n"
+        alert_fn = (
+            email_service.send_helmet_alert
+            if case_type == "helmet"
+            else email_service.send_pothole_alert
         )
         await run_in_threadpool(
-            send_alert_email, _EMAIL_ROUTE[case_type], subject, body
+            alert_fn, case.id, case.latitude, case.longitude, confidence
         )
 
     return schemas.ReportResponse(

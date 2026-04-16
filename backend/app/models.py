@@ -7,6 +7,8 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Integer,
+    PrimaryKeyConstraint,
     String,
     func,
 )
@@ -61,3 +63,18 @@ class Case(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
 
     user: Mapped[User] = relationship(back_populates="cases")
+
+
+class ZoneStat(Base):
+    __tablename__ = "zone_stats"
+    __table_args__ = (
+        PrimaryKeyConstraint("lat_zone", "lng_zone", "type", name="zone_stats_pk"),
+        CheckConstraint(
+            "type IN ('helmet', 'pothole')", name="zone_stats_type_check"
+        ),
+    )
+
+    lat_zone: Mapped[float] = mapped_column(Float)
+    lng_zone: Mapped[float] = mapped_column(Float)
+    type: Mapped[str] = mapped_column(String(16))
+    count: Mapped[int] = mapped_column(Integer, default=0)

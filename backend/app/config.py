@@ -14,6 +14,8 @@ class Settings(BaseSettings):
 
     BACKEND_PUBLIC_URL: str = "http://localhost:8000"
 
+    FCM_CREDENTIALS_PATH: str = ""
+
     JWT_SECRET: str = "change-me"
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 60 * 24

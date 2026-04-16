@@ -1,3 +1,5 @@
+from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -37,3 +39,41 @@ class ReportResponse(BaseModel):
     ai_confidence: float | None
     label: str | None
     image_hdfs_path: str
+
+
+class UserMini(BaseModel):
+    id: int
+    username: str
+    role: str
+
+
+class CaseAdminOut(BaseModel):
+    id: UUID
+    type: str
+    description: str
+    latitude: float
+    longitude: float
+    image_hdfs_path: str | None
+    ai_verified: bool
+    ai_confidence: float | None
+    status: str
+    created_at: datetime
+    user: UserMini
+
+
+class PagedCases(BaseModel):
+    items: list[CaseAdminOut]
+    total: int
+    page: int
+    limit: int
+    pages: int
+
+
+class CaseStatusUpdate(BaseModel):
+    status: Literal["pending", "verified", "in_progress", "completed"]
+
+
+class CaseStatusUpdateResponse(BaseModel):
+    case_id: UUID
+    status: str
+    push_sent: bool

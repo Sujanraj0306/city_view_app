@@ -35,7 +35,6 @@ import com.civicshield.app.ui.common.LottieUrls
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -393,11 +392,11 @@ class ReportFormFragment : Fragment() {
         val raw = e.response()?.errorBody()?.string().orEmpty()
         if (raw.isBlank()) return null
         return runCatching {
-            val detail = JsonParser.parseString(raw).asJsonObject.get("detail")
-            when {
-                detail?.isJsonObject == true ->
-                    detail.asJsonObject.get("rejection_reason")?.takeIf { !it.isJsonNull }?.asString
-                detail?.isJsonPrimitive == true -> detail.asString
+            val detail = org.json.JSONObject(raw).opt("detail")
+            when (detail) {
+                is org.json.JSONObject ->
+                    detail.optString("rejection_reason").takeIf { it.isNotBlank() }
+                is String -> detail.takeIf { it.isNotBlank() }
                 else -> null
             }
         }.getOrNull()

@@ -6,7 +6,10 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str = "postgresql://civicshield:civicshield@postgres:5432/civicshield"
     KAFKA_BOOTSTRAP_SERVERS: str = "kafka:9092"
+    KAFKA_CIVIC_REPORTS_TOPIC: str = "civic-reports"
     HDFS_NAMENODE: str = "hdfs://namenode:9000"
+    HDFS_WEBHDFS_URL: str = "http://namenode:9870"
+    HDFS_USER: str = "root"
     AI_SERVICE_URL: str = "http://ai-service:8001"
 
     JWT_SECRET: str = "change-me"

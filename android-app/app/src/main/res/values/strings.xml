@@ -18,4 +18,20 @@
 
     <!-- Shared -->
     <string name="nav_rss">RSS Feed</string>
+
+    <!-- Report screen -->
+    <string name="btn_capture">Capture</string>
+    <string name="btn_submit">Submit Report</string>
+    <string name="desc_hint">Description (optional)</string>
+    <string name="capture_prompt">Tap Capture to take a photo of the violation.</string>
+    <string name="capture_ready">Image captured. Ready to submit.</string>
+    <string name="loc_waiting">Waiting for GPS…</string>
+    <string name="loc_fetching">Fetching location…</string>
+    <string name="loc_unavailable">Location unavailable. Move outside and try again.</string>
+    <string name="loc_format">Location: (%1$.4f, %2$.4f)</string>
+    <string name="err_camera_permission">Camera permission is required to capture photos.</string>
+    <string name="err_location_permission">Location permission is required for civic reports.</string>
+    <string name="submit_missing_image">Please capture an image first.</string>
+    <string name="submit_missing_location">Waiting for GPS — please try again in a few seconds.</string>
+    <string name="submit_success">Reported! Case %1$s (status: %2$s)</string>
 </resources>

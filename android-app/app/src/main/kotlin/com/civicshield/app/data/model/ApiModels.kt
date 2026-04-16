@@ -21,3 +21,19 @@ data class FcmTokenRequest(
 data class OkResponse(
     val ok: Boolean,
 )
+
+data class ReportRequest(
+    @SerializedName("image_base64") val imageBase64: String,
+    val latitude: Double,
+    val longitude: Double,
+    val description: String? = null,
+)
+
+data class ReportResponse(
+    @SerializedName("case_id") val caseId: String,
+    val status: String,
+    @SerializedName("ai_verified") val aiVerified: Boolean,
+    @SerializedName("ai_confidence") val aiConfidence: Double?,
+    val label: String?,
+    @SerializedName("image_hdfs_path") val imageHdfsPath: String,
+)

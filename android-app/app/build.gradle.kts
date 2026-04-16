@@ -77,4 +77,14 @@ dependencies {
 
     // ViewPager2
     implementation("androidx.viewpager2:viewpager2:1.1.0-beta02")
+
+    // Admin screens
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
+    // OSMDroid (maps, no API key)
+    implementation("org.osmdroid:osmdroid-android:6.1.17")
+
+    // MPAndroidChart (analytics)
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }

@@ -34,4 +34,13 @@
     <string name="submit_missing_image">Please capture an image first.</string>
     <string name="submit_missing_location">Waiting for GPS — please try again in a few seconds.</string>
     <string name="submit_success">Reported! Case %1$s (status: %2$s)</string>
+
+    <!-- Admin screens -->
+    <string name="cases_empty">No cases yet.</string>
+    <string name="case_id_short">ID: %1$s…</string>
+    <string name="ai_verified_label">AI verified (%1$.0f%%)</string>
+    <string name="ai_verified_label_short">AI verified</string>
+    <string name="ai_unverified_label">Pending AI review</string>
+    <string name="analytics_top_zones">Top 10 zones by violation count</string>
+    <string name="analytics_split">Helmet vs pothole split</string>
 </resources>

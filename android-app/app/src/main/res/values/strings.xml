@@ -43,4 +43,9 @@
     <string name="ai_unverified_label">Pending AI review</string>
     <string name="analytics_top_zones">Top 10 zones by violation count</string>
     <string name="analytics_split">Helmet vs pothole split</string>
+
+    <!-- RSS -->
+    <string name="rss_empty">No RSS items yet.</string>
+    <!-- My Cases -->
+    <string name="my_cases_empty">You haven\'t reported any cases yet.</string>
 </resources>

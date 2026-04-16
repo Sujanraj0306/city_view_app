@@ -179,6 +179,45 @@ async def report_pothole(
     )
 
 
+@app.get("/cases", response_model=list[schemas.CaseAdminOut])
+def list_my_cases(
+    user_id: str | None = Query(None, description="Must be 'me' or omitted."),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if user_id is not None and user_id != "me":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="user_id must be 'me'",
+        )
+    rows = (
+        db.query(Case)
+        .options(joinedload(Case.user))
+        .filter(Case.user_id == current_user.id)
+        .order_by(Case.created_at.desc())
+        .limit(100)
+        .all()
+    )
+    return [
+        schemas.CaseAdminOut(
+            id=c.id,
+            type=c.type,
+            description=c.description,
+            latitude=c.latitude,
+            longitude=c.longitude,
+            image_hdfs_path=c.image_hdfs_path,
+            ai_verified=c.ai_verified,
+            ai_confidence=c.ai_confidence,
+            status=c.status,
+            created_at=c.created_at,
+            user=schemas.UserMini(
+                id=c.user.id, username=c.user.username, role=c.user.role
+            ),
+        )
+        for c in rows
+    ]
+
+
 @app.get("/cases/{case_id}/image")
 async def get_case_image(case_id: uuid.UUID, db: Session = Depends(get_db)):
     case = db.get(Case, case_id)

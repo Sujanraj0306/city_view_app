@@ -1,5 +1,6 @@
 package com.civicshield.app.data.api
 
+import com.civicshield.app.data.model.CaseAdminItem
 import com.civicshield.app.data.model.CaseStatusUpdate
 import com.civicshield.app.data.model.CaseStatusUpdateResponse
 import com.civicshield.app.data.model.FcmTokenRequest
@@ -47,4 +48,12 @@ interface ApiService {
 
     @GET("analytics/zones")
     suspend fun getAnalyticsZones(): ZoneCollection
+
+    @GET("cases")
+    suspend fun listMyCases(
+        @Query("user_id") userId: String = "me",
+    ): List<CaseAdminItem>
+
+    @GET("rss")
+    suspend fun getRssFeed(): okhttp3.ResponseBody
 }

@@ -49,7 +49,8 @@ data class UserMini(
 data class CaseAdminItem(
     val id: String,
     val type: String,
-    val description: String,
+    @SerializedName("user_description") val userDescription: String = "",
+    @SerializedName("ai_description") val aiDescription: String? = null,
     val latitude: Double,
     val longitude: Double,
     @SerializedName("image_hdfs_path") val imageHdfsPath: String?,

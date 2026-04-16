@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+
+    <aapt:attr name="android:drawable">
+        <vector
+            android:width="24dp"
+            android:height="24dp"
+            android:viewportWidth="24"
+            android:viewportHeight="24">
+            <group
+                android:name="root"
+                android:pivotX="12"
+                android:pivotY="12"
+                android:scaleX="1"
+                android:scaleY="1">
+                <path
+                    android:name="pin"
+                    android:fillColor="#1565C0"
+                    android:pathData="M20.5,3 L15,5 9,3 3.4,4.9 C3.2,5 3,5.2 3,5.5 v16 C3,21.8 3.2,22 3.5,22 h0.2 L9,20 15,22 20.6,20.1 C20.8,20 21,19.8 21,19.5 v-16 C21,3.2 20.8,3 20.5,3 Z M10,5.5 l4,1.4 v11.6 l-4,-1.4 V5.5 Z M5,6.5 l3,-1 v11.7 l-3,1 V6.5 Z M19,17.5 l-3,1 V6.9 l3,-1 V17.5 Z" />
+            </group>
+        </vector>
+    </aapt:attr>
+
+    <target android:name="root">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:propertyName="scaleX"
+                    android:duration="300"
+                    android:valueFrom="1.0"
+                    android:valueTo="1.25"
+                    android:repeatCount="1"
+                    android:repeatMode="reverse"
+                    android:interpolator="@android:interpolator/accelerate_decelerate" />
+                <objectAnimator
+                    android:propertyName="scaleY"
+                    android:duration="300"
+                    android:valueFrom="1.0"
+                    android:valueTo="1.25"
+                    android:repeatCount="1"
+                    android:repeatMode="reverse"
+                    android:interpolator="@android:interpolator/accelerate_decelerate" />
+            </set>
+        </aapt:attr>
+    </target>
+</animated-vector>

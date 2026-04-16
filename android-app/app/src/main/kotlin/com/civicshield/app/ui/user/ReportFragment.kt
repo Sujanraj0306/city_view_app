@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.civicshield.app.databinding.FragmentReportBinding
+import com.civicshield.app.ui.common.LottieUrls
 import com.google.android.material.tabs.TabLayoutMediator
 
 class ReportFragment : Fragment() {
@@ -27,6 +28,12 @@ class ReportFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.lottieHero.apply {
+            setFailureListener { _ -> /* silently degrade on 404 */ }
+            setAnimationFromUrl(LottieUrls.HOME_HERO)
+            playAnimation()
+        }
 
         binding.viewPager.adapter = ReportPagerAdapter(childFragmentManager, viewLifecycleOwner.lifecycle)
 

@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "123456789000",
-    "project_id": "civicshield-placeholder",
-    "storage_bucket": "civicshield-placeholder.appspot.com"
+    "project_number": "52619995833",
+    "project_id": "civicwatch-492004",
+    "storage_bucket": "civicwatch-492004.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:123456789000:android:0000000000000000000000",
+        "mobilesdk_app_id": "1:52619995833:android:cf78fe1665e20ea5704968",
         "android_client_info": {
           "package_name": "com.civicshield.app"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyPLACEHOLDER_REPLACE_WITH_REAL_KEY_00"
+          "current_key": "AIzaSyCIjx3_rP0SyNhYAlsbTVG5nVvEWZen09I"
         }
       ],
       "services": {

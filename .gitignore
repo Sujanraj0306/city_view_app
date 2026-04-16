@@ -2,6 +2,7 @@
 .env
 .env.local
 .env.*.local
+backend/firebase-key.json
 
 # Python
 __pycache__/

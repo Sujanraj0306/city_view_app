@@ -39,7 +39,8 @@ class UserCaseAdapter : ListAdapter<CaseAdminItem, UserCaseAdapter.VH>(DIFF) {
             binding.tvLocation.text = ctx.getString(
                 R.string.loc_format, item.latitude, item.longitude
             )
-            binding.tvDescription.text = item.description.ifBlank { "—" }
+            binding.tvDescription.text =
+                (item.aiDescription ?: item.userDescription).ifBlank { "—" }
 
             binding.tvStatus.text = item.status.replace('_', ' ')
             binding.tvStatus.backgroundTintList = ColorStateList.valueOf(statusColor(item.status))

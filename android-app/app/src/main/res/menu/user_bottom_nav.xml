@@ -9,6 +9,10 @@
         android:title="@string/nav_my_cases"
         android:icon="@android:drawable/ic_menu_agenda" />
     <item
+        android:id="@+id/nav_map"
+        android:title="@string/nav_map"
+        android:icon="@drawable/ic_map_avd" />
+    <item
         android:id="@+id/nav_rss"
         android:title="@string/nav_rss"
         android:icon="@android:drawable/ic_menu_recent_history" />

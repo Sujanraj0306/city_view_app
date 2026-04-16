@@ -4,16 +4,24 @@ import xml.etree.ElementTree as ET
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from email.utils import format_datetime
-from typing import Awaitable, Callable
+from typing import Literal
 
 from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 from sqlalchemy import text
 from sqlalchemy.orm import Session, joinedload
 
-from . import ai_service, email_service, fcm_service, hdfs_service, kafka_service, schemas
+from . import (
+    ai_service,
+    email_service,
+    fcm_service,
+    gemini_service,
+    hdfs_service,
+    kafka_service,
+    schemas,
+)
 from .auth import (
     create_access_token,
     get_current_user,
@@ -91,44 +99,74 @@ def save_fcm_token(
 
 
 async def _create_report(
-    case_type: str,
-    predict_fn: Callable[[str], Awaitable[dict]],
+    case_type: Literal["helmet", "pothole"],
     payload: schemas.ReportRequest,
     db: Session,
     current_user: User,
-) -> schemas.ReportResponse:
-    case_id = uuid.uuid4()
+):
+    # (1) Gemini evidence gate — no side effects until this passes.
+    try:
+        analysis = await gemini_service.analyze_report_image(
+            payload.image_base64, case_type
+        )
+    except gemini_service.GeminiUnavailable as e:
+        log.warning("Gemini validation unavailable for %s report: %s", case_type, e)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Image validation service is unavailable, please retry.",
+        )
 
+    if not analysis["is_valid_violation"]:
+        reason = (
+            analysis["rejection_reason"]
+            or "Image does not show sufficient evidence of a violation."
+        )
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content={"accepted": False, "reason": reason},
+        )
+
+    # (2) Valid — Gemini's description is authoritative.
+    ai_description = analysis["description"]
+
+    # (3) Store evidence image.
+    case_id = uuid.uuid4()
     hdfs_path = await run_in_threadpool(
         hdfs_service.upload_image, case_id, payload.image_base64
     )
 
+    # (4) YOLO confidence. Fall back to Gemini's score if the model is offline.
+    predict_fn = (
+        ai_service.predict_helmet
+        if case_type == "helmet"
+        else ai_service.predict_pothole
+    )
     try:
-        prediction = await predict_fn(payload.image_base64)
+        yolo = await predict_fn(payload.image_base64)
+        confidence = float(yolo.get("confidence") or 0.0)
     except Exception as e:
-        log.warning("AI service call failed for case %s: %s", case_id, e)
-        prediction = {"detected": False, "confidence": 0.0, "label": None}
+        log.warning("YOLO call failed for %s case %s: %s", case_type, case_id, e)
+        confidence = float(analysis["confidence_score"])
 
-    detected = bool(prediction.get("detected", False))
-    confidence = float(prediction.get("confidence", 0.0) or 0.0)
-    label = prediction.get("label")
-
+    # (5) Persist.
     case = Case(
         id=case_id,
         type=case_type,
-        description=payload.description or "",
+        user_description=payload.description or "",
+        ai_description=ai_description,
         latitude=payload.latitude,
         longitude=payload.longitude,
         image_hdfs_path=hdfs_path,
-        ai_verified=detected,
+        ai_verified=True,
         ai_confidence=confidence,
-        status="verified" if detected else "pending",
+        status="verified",
         user_id=current_user.id,
     )
     db.add(case)
     db.commit()
     db.refresh(case)
 
+    # (6) Kafka event.
     await kafka_service.publish_report(
         case_id=case.id,
         case_type=case.type,
@@ -137,46 +175,48 @@ async def _create_report(
         ai_verified=case.ai_verified,
     )
 
-    if detected:
-        alert_fn = (
-            email_service.send_helmet_alert
-            if case_type == "helmet"
-            else email_service.send_pothole_alert
-        )
-        await run_in_threadpool(
-            alert_fn, case.id, case.latitude, case.longitude, confidence
-        )
+    # (7) Alert email with image embedded inline (cid:).
+    alert_fn = (
+        email_service.send_helmet_alert
+        if case_type == "helmet"
+        else email_service.send_pothole_alert
+    )
+    await run_in_threadpool(
+        alert_fn,
+        case.id,
+        case.latitude,
+        case.longitude,
+        confidence,
+        ai_description,
+        payload.image_base64,
+    )
 
     return schemas.ReportResponse(
         case_id=case.id,
         status=case.status,
         ai_verified=case.ai_verified,
         ai_confidence=case.ai_confidence,
-        label=label,
+        label=case_type,
         image_hdfs_path=case.image_hdfs_path,
     )
 
 
-@app.post("/report/helmet", response_model=schemas.ReportResponse)
+@app.post("/report/helmet")
 async def report_helmet(
     payload: schemas.ReportRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return await _create_report(
-        "helmet", ai_service.predict_helmet, payload, db, current_user
-    )
+    return await _create_report("helmet", payload, db, current_user)
 
 
-@app.post("/report/pothole", response_model=schemas.ReportResponse)
+@app.post("/report/pothole")
 async def report_pothole(
     payload: schemas.ReportRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    return await _create_report(
-        "pothole", ai_service.predict_pothole, payload, db, current_user
-    )
+    return await _create_report("pothole", payload, db, current_user)
 
 
 @app.get("/cases", response_model=list[schemas.CaseAdminOut])
@@ -202,7 +242,8 @@ def list_my_cases(
         schemas.CaseAdminOut(
             id=c.id,
             type=c.type,
-            description=c.description,
+            user_description=c.user_description,
+            ai_description=c.ai_description,
             latitude=c.latitude,
             longitude=c.longitude,
             image_hdfs_path=c.image_hdfs_path,
@@ -263,7 +304,8 @@ def list_cases_admin(
         schemas.CaseAdminOut(
             id=c.id,
             type=c.type,
-            description=c.description,
+            user_description=c.user_description,
+            ai_description=c.ai_description,
             latitude=c.latitude,
             longitude=c.longitude,
             image_hdfs_path=c.image_hdfs_path,
@@ -394,8 +436,10 @@ def rss_feed(db: Session = Depends(get_db)):
             f"AI confidence: {(c.ai_confidence or 0.0):.2f}",
             f"Status: {c.status}",
         ]
-        if c.description:
-            desc_parts.append(f"Note: {c.description}")
+        if c.ai_description:
+            desc_parts.append(f"AI: {c.ai_description}")
+        if c.user_description:
+            desc_parts.append(f"Reporter note: {c.user_description}")
         ET.SubElement(item, "description").text = " | ".join(desc_parts)
         ET.SubElement(item, "pubDate").text = format_datetime(c.created_at)
         guid = ET.SubElement(item, "guid", isPermaLink="false")

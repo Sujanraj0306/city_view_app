@@ -50,7 +50,8 @@ class Case(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     type: Mapped[str] = mapped_column(String(16))
-    description: Mapped[str] = mapped_column(String(2000))
+    user_description: Mapped[str] = mapped_column(String(2000), default="")
+    ai_description: Mapped[str | None] = mapped_column(String(2000), nullable=True)
     latitude: Mapped[float] = mapped_column(Float)
     longitude: Mapped[float] = mapped_column(Float)
     image_hdfs_path: Mapped[str | None] = mapped_column(String(512), nullable=True)

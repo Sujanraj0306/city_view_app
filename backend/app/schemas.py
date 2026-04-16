@@ -50,7 +50,8 @@ class UserMini(BaseModel):
 class CaseAdminOut(BaseModel):
     id: UUID
     type: str
-    description: str
+    user_description: str
+    ai_description: str | None
     latitude: float
     longitude: float
     image_hdfs_path: str | None

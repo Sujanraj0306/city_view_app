@@ -34,6 +34,12 @@
     <string name="submit_missing_image">Please capture an image first.</string>
     <string name="submit_missing_location">Waiting for GPS — please try again in a few seconds.</string>
     <string name="submit_success">Reported! Case %1$s (status: %2$s)</string>
+    <string name="btn_retake">Retake</string>
+    <string name="btn_use_photo">Use this photo</string>
+    <string name="rejection_title">Image rejected</string>
+    <string name="rejection_generic">This image doesn\'t show enough evidence of a violation.</string>
+    <string name="rejection_retake">Retake</string>
+    <string name="success_toast">Case submitted — %1$s</string>
 
     <!-- Admin screens -->
     <string name="cases_empty">No cases yet.</string>
@@ -48,4 +54,22 @@
     <string name="rss_empty">No RSS items yet.</string>
     <!-- My Cases -->
     <string name="my_cases_empty">You haven\'t reported any cases yet.</string>
+
+    <!-- Map screen -->
+    <string name="legend_title">Legend</string>
+    <string name="legend_helmet">Helmet</string>
+    <string name="legend_pothole">Pothole</string>
+    <string name="legend_completed">Completed</string>
+    <string name="map_load_failed">Could not load cases: %1$s</string>
+    <string name="map_empty_user">No cases yet — submit one to see it here.</string>
+    <string name="map_empty_admin">No cases in the system yet.</string>
+
+    <!-- Case detail sheet -->
+    <string name="sheet_case_id">Case %1$s</string>
+    <string name="sheet_type">Type</string>
+    <string name="sheet_ai_description">AI description</string>
+    <string name="sheet_status">Status</string>
+    <string name="sheet_date">Submitted</string>
+    <string name="sheet_no_description">(no AI description)</string>
+    <string name="sheet_image_failed">Could not load image.</string>
 </resources>

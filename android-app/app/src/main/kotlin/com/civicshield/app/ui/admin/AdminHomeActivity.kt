@@ -1,5 +1,6 @@
 package com.civicshield.app.ui.admin
 
+import android.graphics.drawable.Animatable
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -21,9 +22,10 @@ class AdminHomeActivity : AppCompatActivity() {
         }
 
         binding.bottomNav.setOnItemSelectedListener { item ->
+            if (item.itemId == R.id.nav_map) (item.icon as? Animatable)?.start()
             val fragment: Fragment = when (item.itemId) {
                 R.id.nav_all_cases -> AllCasesFragment()
-                R.id.nav_map -> MapFragment()
+                R.id.nav_map -> AdminMapFragment()
                 R.id.nav_analytics -> AnalyticsFragment()
                 R.id.nav_rss -> RssFragment()
                 else -> return@setOnItemSelectedListener false

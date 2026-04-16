@@ -34,6 +34,45 @@ A monorepo for the CivicShield platform: an Android client, a backend API, and a
 - (For Android work) Android Studio Hedgehog or newer and a JDK 17
 - ~8 GB free RAM (Hadoop + Kafka are memory-hungry)
 
+## Setup before first run
+
+All of the following live in a single `.env` file at the repo root. **Never commit this file** — it is already listed in [.gitignore](.gitignore).
+
+1. **Copy the template**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Fill in your Gemini API key** (`GEMINI_API_KEY`)
+   - Get one free at [Google AI Studio](https://aistudio.google.com/app/apikey) → **Create API key**.
+   - Paste it into `.env` on the `GEMINI_API_KEY=` line.
+   - This key powers the image-evidence gate. Reports submitted without a valid key are rejected with HTTP 503.
+
+3. **Fill in your Gmail sender address and App Password** (`GMAIL_USER`, `GMAIL_PASSWORD`)
+   - `GMAIL_PASSWORD` is **not** your regular Gmail login — it is a 16-character [Google App Password](https://support.google.com/accounts/answer/185833). 2-Step Verification must be enabled on the account before you can generate one.
+   - Generate at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) — pick "Mail" / "Other (custom name)".
+   - Paste the 16 characters into `.env` (spaces are allowed, the Gmail SMTP client strips them).
+
+4. **Fill in alert recipient addresses** (`POLICE_EMAIL`, `CORPORATION_EMAIL`)
+   - `POLICE_EMAIL` receives helmet-violation alerts; `CORPORATION_EMAIL` receives pothole alerts.
+   - For local testing, point both at a personal inbox you can check.
+
+5. **(Optional) Generate a long JWT secret** (`JWT_SECRET`)
+
+   ```bash
+   openssl rand -hex 32
+   ```
+
+   Paste the output into `.env`. Any sufficiently long random string works — just don't leave the placeholder.
+
+6. **(Optional) Firebase service account** for push notifications
+   - Firebase Console → Project Settings → Service Accounts → *Generate new private key*.
+   - Save the JSON to `backend/firebase-key.json`. Leave `FCM_CREDENTIALS_PATH` as the default in `.env`.
+   - If you skip this, push notifications are silently no-op'd — the rest of the app still works.
+
+Once `.env` is filled in, continue with the run instructions below.
+
 ## Step-by-step: running the stack
 
 1. **Clone and enter the repo**

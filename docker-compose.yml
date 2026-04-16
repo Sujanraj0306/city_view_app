@@ -98,6 +98,9 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       HDFS_NAMENODE: hdfs://namenode:9000
       AI_SERVICE_URL: http://ai-service:8001
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    volumes:
+      - ./backend/firebase-key.json:/app/firebase-key.json:ro
     depends_on:
       postgres:
         condition: service_healthy

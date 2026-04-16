@@ -25,5 +25,7 @@ class Settings(BaseSettings):
     POLICE_EMAIL: str = ""
     CORPORATION_EMAIL: str = ""
 
+    GEMINI_API_KEY: str = ""
+
 
 settings = Settings()

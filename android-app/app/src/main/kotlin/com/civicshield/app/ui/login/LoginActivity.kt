@@ -11,6 +11,7 @@ import com.civicshield.app.data.local.AuthStore
 import com.civicshield.app.data.model.LoginRequest
 import com.civicshield.app.databinding.ActivityLoginBinding
 import com.civicshield.app.ui.admin.AdminHomeActivity
+import com.civicshield.app.ui.common.LottieUrls
 import com.civicshield.app.ui.user.UserHomeActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,6 +30,12 @@ class LoginActivity : AppCompatActivity() {
 
         authStore = AuthStore(applicationContext)
         api = RetrofitClient.create(applicationContext)
+
+        binding.lottieShield.apply {
+            setFailureListener { _ -> /* broken URL: silently leave blank */ }
+            setAnimationFromUrl(LottieUrls.LOGIN_SHIELD)
+            playAnimation()
+        }
 
         lifecycleScope.launch {
             authStore.currentRole()?.let { navigateByRole(it) }

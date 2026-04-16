@@ -1,49 +1,21 @@
-from datetime import datetime
-
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, Field
 
 
-class UserCreate(BaseModel):
-    email: EmailStr
+class LoginRequest(BaseModel):
+    username: str
     password: str
-    full_name: str | None = None
-
-
-class UserOut(BaseModel):
-    id: int
-    email: EmailStr
-    full_name: str | None = None
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    user_id: int
+    role: str
 
 
-class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str
+class FCMTokenRequest(BaseModel):
+    fcm_token: str = Field(..., min_length=1, max_length=512)
 
 
-class ReportCreate(BaseModel):
-    title: str
-    description: str
-    location: str | None = None
-
-
-class ReportOut(BaseModel):
-    id: int
-    title: str
-    description: str
-    location: str | None
-    category: str | None
-    routed_to: str | None
-    status: str
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
+class OkResponse(BaseModel):
+    ok: bool = True

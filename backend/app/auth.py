@@ -12,7 +12,7 @@ from .models import User
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=True)
 
 
 def hash_password(password: str) -> str:
@@ -23,9 +23,14 @@ def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
 
-def create_access_token(subject: str) -> str:
+def create_access_token(user_id: int, role: str) -> str:
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.JWT_EXPIRE_MINUTES)
-    payload = {"sub": subject, "exp": expire}
+    payload = {
+        "sub": str(user_id),
+        "user_id": user_id,
+        "role": role,
+        "exp": expire,
+    }
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 
 
@@ -40,13 +45,13 @@ def get_current_user(
     )
     try:
         payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
-        email: str | None = payload.get("sub")
-        if email is None:
+        user_id = payload.get("user_id")
+        if user_id is None:
             raise credentials_exc
     except JWTError:
         raise credentials_exc
 
-    user = db.query(User).filter(User.email == email).first()
+    user = db.get(User, int(user_id))
     if user is None:
         raise credentials_exc
     return user
